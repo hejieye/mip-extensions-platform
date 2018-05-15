@@ -1,8 +1,8 @@
 /**
 * @file 脚本支持
 * @author hejieye
-* @time  2018-04-27
-* @version 2.1.6
+* @time  2018-05-15
+* @version 2.1.7
 */
 define(function (require) {
     var $ = require('zepto');
@@ -838,8 +838,8 @@ define(function (require) {
         var youlaiTag = '';
         var runhaiTag = '';
         for (var i = 0; i < arry.length; i++) {
-        	youlaiTag =arry[i].replace('[', '').replace(']', '');
-        	runhaiTag = "runhai"+arry[i].replace('[', '').replace(']', '');
+        	youlaiTag =arry[i].replace('[', '').replace(']', '') + '?callback=cb';
+        	runhaiTag = "runhai"+arry[i].replace('[', '').replace(']', '') + '?callback=cb';
         }
         try {
             var province = ''; // 省份
@@ -870,25 +870,27 @@ define(function (require) {
                     nowTime: getSysTime()
                 });
                 // 友来包月
-                $.get(url+youlaiTag, function (datas) {
+                $.getJSON(url+youlaiTag, function (datas) {
                 	var youlaiArray = null;
                 	var runhaiArray = null;
                     try {
-                        var res = $.parseJSON(datas);
-                        if (res.succ === 'Y') { // 不等于空
+                        if (datas.succ === 'Y') { // 不等于空
 			    try {
-				var cmJsonData = $.parseJSON(res.html);
+				var json = datas.html;
+				json = json.substring(3, json.length-1);
+				var cmJsonData = $.parseJSON(json);
                                 if ('undefined' !== typeof cmJsonData) {
                             	    youlaiArray = loadData(param, cmJsonData);
                                 }
 			    }catch (e) {}
                         }
-                        $.get(url+runhaiTag, function (result) {
+                        $.getJSON(url+runhaiTag, function (result) {
                             try {
-                                var res = $.parseJSON(result);
-                                if (res.succ === 'Y') { // 不等于空
+                                if (result.succ === 'Y') { // 不等于空
 				    try {
-                                        var cmJsonData = $.parseJSON(res.html);
+					var json = result.html;
+                                	json = json.substring(3, json.length-1);
+                                        var cmJsonData = $.parseJSON(json);
                                         if ('undefined' !== typeof cmJsonData) {
                                             runhaiArray = loadData(param, cmJsonData);
                                         }
@@ -1090,7 +1092,13 @@ define(function (require) {
 		html+='</div>';
 		html+='<span class="m-yy-link">查看详情</span>';
 		html+='</div></div></div>';
-		$(clazz).append(html);
+		var index = $(clazz).length - 1;
+		var $that = document.querySelectorAll(clazz);
+                if($that.length > 0) {
+        	    var newdiv=document.createElement("div");
+        	    newdiv.innerHTML = html;
+        	    $that[index].parentNode.appendChild(newdiv);
+                }
     };
     var monthlyZixun = function (clazz, adUserId, object, baiduObj) {
 		var html = '<div class="m-doc-con runhai_zixun">';
