@@ -1,8 +1,8 @@
 /**
 * @file 脚本支持
 * @author  hejieye
-* @time  20170106
-* @version 1.3.2
+* @time  2018-05-15
+* @version 1.3.3
 */
 define(function (require) {
     var $ = require('zepto');
@@ -182,7 +182,9 @@ define(function (require) {
         checkLogin: function () {
             var btnUser = $('.btn-user');
             var thisHref = window.location.href;
-            var checkLoginUrl = 'https://mipp.iask.cn/checkLogin?mip=' + Math.random();
+            var $that = document.querySelector('.paramDiv');
+    	    var cid = $that.getAttribute("cid");
+            var checkLoginUrl = 'https://mipp.iask.cn/checkLogin?mip=' + Math.random()+ '&cid=' + cid;
             $.get(checkLoginUrl,
             function (e) {
                 if (e === null || e === 'null') {
@@ -210,30 +212,6 @@ define(function (require) {
                 event.stopPropagation();
             });
         },
-        sendPost: function (url, positionId, advertId, status, contentId, connId) {
-            url = url + '?positionId=' + positionId + '&advertId='
-            + advertId + '&contentId=' + contentId + '&connId=' + connId;
-            if (status !== null) {
-                url += '&status=1';
-            }
-            $('body').append('<mip-pix src=\'' + url + '\' ></mip-pix>');
-        },
-        // 数据上报
-        checkData: function () {
-            $('mip-ad,mip-embed').each(function () {
-                effects.sendPost('https://mipu.iask.cn/ddd/adAudit', '144', '241', null, '195', 'm_q_detail_attention_1');
-            });
-            setInterval(function () {
-                // 判断是否加载出来
-                $('mip-ad,mip-embed').each(function () {
-                    var loadFlag = $(this).attr('loadFlag');
-                    if ($(this).html().indexOf('iframe') > 0 && loadFlag === undefined) {
-                        $(this).attr('loadFlag', true);
-                        effects.sendPost('https://mipu.iask.cn/ddd/adStatus', '144', '241', 1, '195', 'm_q_detail_attention_1');
-                    }
-                });
-            }, 100);
-        },
         accordion: function () {
             $('.iask-show-more').click(function () {
                 $(this).parent().siblings('.iask-accordion').each(function () {
@@ -250,38 +228,6 @@ define(function (require) {
                 $(this).siblings('.iask-show-more').show();
             });
         },
-        // 好万家导流
-        guideData: function () {
-            var urlf = 'https://mipp.iask.cn/t/mipdf?t=fous';
-            var urlr = 'https://mipp.iask.cn/t/mipdf?t=recom';
-            try {
-                $.ajax({
-                    type: 'GET',
-                    url: urlf,
-                    dataType: 'html',
-                    success: function (data) {
-                        if (!!data) {
-                            $('.load_today_focus').empty();
-                            $('.load_today_focus').append(data);
-                        }
-                    }
-                });
-                $.ajax({
-                    type: 'GET',
-                    url: urlr,
-                    dataType: 'html',
-                    success: function (data) {
-                        if (!!data) {
-                            $('.load_recom_red').empty();
-                            $('.load_recom_red').append(data);
-                        }
-                    }
-                });
-            }
-            catch (e) {
-                console.log(e);
-            }
-        },
         init: function () {
             this.switchBlock();
             this.changeMore();
@@ -293,9 +239,7 @@ define(function (require) {
             this.btnSend();
             this.checkLogin();
             this.userInfoHide();
-            // this.checkData();
             this.accordion();
-            this.guideData();
             this.kownlegMore();
         }
     };
