@@ -8,6 +8,7 @@ define(function (require) {
     var $ = require('zepto');
     var customElem = require('customElement').create();
     var busUid = '';
+    
     var utf8Encode = function (string) {
         string = string.replace(/\r\n/g, '\n');
         var utftext = '';
@@ -120,15 +121,13 @@ define(function (require) {
 	        return output;
 	    };
 	};
+	 
 	var encodeURIStr = function (str) {
 		var result = encodeURIComponent(JSON.stringify(str));
 		return result;
 	};
-	var loadStatsToken = function() {
-    	// 等广告全部加载完成，最后加载百度统计的token
-    	var $tokenDiv = document.querySelector('.mip-stats-token-div');
-    	var $tokenValue = document.querySelector('.mip-token-value');
-    	$tokenDiv.innerHTML = '<mip-stats-baidu token="' + $tokenValue.innerHTML + '"></mip-stats-baidu>';
+	var loadStatsToken = function($tokenDiv, token) {
+    	$tokenDiv.innerHTML = '<mip-stats-baidu token="' + token + '"></mip-stats-baidu>';
     };
     var ipLoad = function (callback) {
     	var url = 'https://mipp.iask.cn/iplookup/search?format=json&callback=?';
@@ -253,6 +252,7 @@ define(function (require) {
         advLogInfo(sources, 1);
         openWindowUrl(url);
     }
+
     function openWindowUrl(url){
     	var $that = document.querySelectorAll('.camnpr');
     	if($that.length > 0) {
@@ -409,8 +409,7 @@ define(function (require) {
     };
     
     // feed 广告
-    var feedInfo = function (statsBaidu, userImg,useName, shortIntroduce, materialIntroduce, materialLink, picList, pos) {
-    	var ele = this.document;
+    var feedInfo = function (ele, statsBaidu, userImg,useName, shortIntroduce, materialIntroduce, materialLink, picList, pos) {
     	var $that = ele.querySelector('.youlai_feed_div');
     	var $thatLink = ele.querySelector('.youlai_feed_div a');
     	var $thatFeed = ele.querySelectorAll('.youlai_feed_div .youlai_feed');
@@ -432,12 +431,12 @@ define(function (require) {
         advLogInfoClick('.youlai_feed_div .href_log', ele.querySelector('.paramDiv'), '');
     };
     // 商业广告
-    var busBottomAM = function () {
-    	var $thatBottomDiv = document.querySelector('.mip_as_bottm_div');
-    	var $thatBottom = document.querySelectorAll('.bus_bottom_div div');
-    	var $thatHot = document.querySelectorAll('.bus_hot_recommend_div div');
-    	var $thatRecomd = document.querySelector('.hot_recomd_div');
-    	var $thatHotSpot = document.querySelectorAll('.bus_hot_spot div');
+    var busBottomAM = function (ele, $tokenDiv, token) {
+    	var $thatBottomDiv = ele.querySelector('.mip_as_bottm_div');
+    	var $thatBottom = ele.querySelectorAll('.bus_bottom_div div');
+    	var $thatHot = ele.querySelectorAll('.bus_hot_recommend_div div');
+    	var $thatRecomd = ele.querySelector('.hot_recomd_div');
+    	var $thatHotSpot = ele.querySelectorAll('.bus_hot_spot div');
     	if($thatBottom.length > 0) {
     		for(var i = 0; i<$thatBottom.length; i ++ ) {
     			var area = $thatBottom[i].getAttribute('area');
@@ -507,7 +506,7 @@ define(function (require) {
     		}
     		advLogInfoClick('.hot-point-list .href_log', document.querySelector('.paramDiv'), '');
     	}
-    	loadStatsToken();
+    	loadStatsToken($tokenDiv, token);
     };
     var validatePut = function () {
     	var ele = this.document;
@@ -543,11 +542,23 @@ define(function (require) {
     		}
     	}
     };
+    var removeInfo = function () {
+    	var $that = document.querySelectorAll('.info-flow-json');
+    	if($that.length > 0) {
+    		for(var i=0; i<$that.length; i++) {
+    			var t = $that[i];
+    			t.parentNode.removeChild(t);
+    		}
+    	}
+    };
     var youLai = function (data) {
     	var ele = this.document;
     	var $thatDiv = ele.querySelector('.mip_as_bottm_div');
     	var $thatHotList = ele.querySelector('.hot-tui-list');
     	var $thatHotDiv = ele.querySelector('.hot_recomd_div');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
+    	
         var json = data.adList;
         for (var key in json) {
             if (json[key].type === '4') {
@@ -575,7 +586,7 @@ define(function (require) {
                 var picList = obj.picList;
                 var baiduStr = {"type":"click", "data":["_trackEvent", "MIP_SY_1000", "skip", "MIP_SY_1000_feed"]};
                 var baiduObj = encodeURIStr(baiduStr);
-                feedInfo(baiduObj, obj2.picUrl, obj2.companyName,obj.describe, obj.title, obj.picLink, picList, '');
+                feedInfo(ele, baiduObj, obj2.picUrl, obj2.companyName,obj.describe, obj.title, obj.picLink, picList, '');
             }
             else if (json[key].type === '6') {
                 var obj = json[key];
@@ -594,7 +605,7 @@ define(function (require) {
                 advLogInfoClick('.hot-tui-list .href_log', ele.querySelector('.paramDiv'), '');
             }
         }
-        loadStatsToken();
+        loadStatsToken($tokenDiv, token);
     };
     
     var soulew = function (data, channelNumber) {
@@ -602,6 +613,8 @@ define(function (require) {
     	var $thatDiv = ele.querySelector('.mip_as_bottm_div');
     	var $thatHotList = ele.querySelector('.hot-tui-list');
     	var $thatHotDiv = ele.querySelector('.hot_recomd_div');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         var json = data.adList;
         for (var key in json) {
             if (json[key].type === '4') {
@@ -648,7 +661,7 @@ define(function (require) {
                 advLogInfoClick('.hot-tui-list .href_log', ele.querySelector('.paramDiv'), '');
             }
         }
-        loadStatsToken();
+        loadStatsToken($tokenDiv, token);
     };
     
     var removeClass = function (obj, cls) {
@@ -670,6 +683,8 @@ define(function (require) {
     	var $thatDiv = ele.querySelector('.mip_as_bottm_div');
     	var $thatHotList = ele.querySelector('.hot-tui-list');
     	var $thatHotDiv = ele.querySelector('.hot_recomd_div');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         for (var k in json) {
         	if (json[k].adType === 3) {
         		qiyeData = json[k];
@@ -725,17 +740,19 @@ define(function (require) {
                 advLogInfoClick('.hot-tui-list .href_log', ele.querySelector('.paramDiv'), '');
             }
         }
-        loadStatsToken();
+        loadStatsToken($tokenDiv, token);
     };
     
     var tianZhu = function (data) {
     	var ele = this.document;
     	var $thatDiv = ele.querySelector('.mip_as_bottm_div');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         var tempStr = {"type":"click", "data":["_trackEvent", "MIP_SY_300", "skip", "MIP_SY_300_sj"]};
         var statsBaidu = 'data-stats-baidu-obj="' + encodeURIStr(tempStr) + '"';
         $thatDiv.innerHTML = putMXfAd(data.pics[3].picLink, data.pics[3].picLocal, statsBaidu, '');
         advLogInfoClick('.mip_as_bottm_div .href_log', ele.querySelector('.paramDiv'), '');
-        loadStatsToken();
+        loadStatsToken($tokenDiv, token);
     };
     // 商业广告标准版企业信息
     var commercialSqc  = function (divData, commercialStandardHover) {
@@ -824,15 +841,17 @@ define(function (require) {
                     var pic = json.pics[0] || '';
                     putQiyeInfo(companyName, drName, website, pic.picLocal, '', '');
                 }
-                $('.mip_as_bottm_div').empty();
-                $('.mip_as_bottm_div').append(htmls);
+				var $that = document.querySelector('.mip_as_bottm_div');
+                $that.innerHTML = htmls;
                 advLogInfoClick('.mip_as_bottm_div .href_log', document.querySelector('.paramDiv'), '');
-                loadStatsToken();
+                var $tokenDiv = document.querySelector('.mip-stats-token-div');
+            	var token = document.querySelector('.mip-token-value').innerHTML;
+                loadStatsToken($tokenDiv, token);
             }
         });
     };
     // 加载url中的js
-    var loadURLJS = function (tags, params, sourceType, questionId, $thatParam, $thatLog) {
+    var loadURLJS = function (tags, params, sourceType, questionId, $thatParam, $thatLog,$tokenDiv, token) {
         var url = 'https://mipp.iask.cn/mib/tag/';
         var arry = tags.split(':');
         var youlaiTag = '';
@@ -874,61 +893,61 @@ define(function (require) {
                     qTags: paramsArry[4], // 标签
                     nowTime: getSysTime()
                 });
-		if(visitFlag) {
-                    // 友来包月
-                    $.getJSON(url+youlaiTag, function (datas) {
-                	var youlaiArray = null;
-                	var runhaiArray = null;
-                        try {
-                            if (datas.succ === 'Y') { // 不等于空
-			        try {
-				    var json = datas.html;
-				    json = json.substring(3, json.length-1);
-				    var cmJsonData = $.parseJSON(json);
-                                    if ('undefined' !== typeof cmJsonData) {
-                            	        youlaiArray = loadData(param, cmJsonData);
-                                    }
-			        }catch (e) {}
-                            }
-                            $.getJSON(url+runhaiTag, function (result) {
-                                try {
-                                    if (result.succ === 'Y') { // 不等于空
-				        try {
-					    var json = result.html;
-                                	    json = json.substring(3, json.length-1);
-                                            var cmJsonData = $.parseJSON(json);
-                                            if ('undefined' !== typeof cmJsonData) {
-                                                runhaiArray = loadData(param, cmJsonData);
-                                            }
-			                }catch (e) {}
-                                    }
-                                    if(youlaiArray != null && youlaiArray.length > 0) {
-                                	for(var i = 0; i < youlaiArray.length; i ++) {
-                                		adPut(youlaiArray[i]);
-                                	}
-                                	advLogInfo(sourceType, 0);
-                                    }
-                                    if(runhaiArray != null && runhaiArray.length > 0) {
-                                	removeBaiduAd();
-                                	var runhaiData = runhaiArray[Math.floor(Math.random()*runhaiArray.length)];
-                                	runhaiPut(runhaiData);
-                                	advLogInfo('COOPERATE_RUNHAI', 0);
-                                    }
-                                    if((runhaiArray == null || runhaiArray.length == 0)
-                                		&& (youlaiArray == null || youlaiArray.length == 0)) {
-                                	loadEffect(questionId, $thatParam, $thatLog); // 加载效果广告
-                                    }else{
-                                        loadStatsToken();
-                                    }
-                                } catch (e) {
-                            	    console.log(e);
-                                }
-                            });
-                        } catch (e) {}
-                    });
-		}
+                if(visitFlag) {
+                	// 友来包月
+                	$.getJSON(url+youlaiTag, function (datas) {
+                		var youlaiArray = null;
+                		var runhaiArray = null;
+                		try {
+                			if (datas.succ === 'Y') { // 不等于空
+                				try {
+                					var json = datas.html;
+                					json = json.substring(3, json.length-1);
+                					var cmJsonData = $.parseJSON(json);
+                					if ('undefined' !== typeof cmJsonData) {
+                						youlaiArray = loadData(param, cmJsonData);
+                					}
+                				}catch (e) {}
+                			}
+                			$.getJSON(url+runhaiTag, function (result) {
+                				try {
+                					if (result.succ === 'Y') { // 不等于空
+                						try {
+                							var json = result.html;
+                							json = json.substring(3, json.length-1);
+                							var cmJsonData = $.parseJSON(json);
+                							if ('undefined' !== typeof cmJsonData) {
+                								runhaiArray = loadData(param, cmJsonData);
+                							}
+                						}catch (e) {}
+                					}
+                					if(youlaiArray != null && youlaiArray.length > 0) {
+                						for(var i = 0; i < youlaiArray.length; i ++) {
+                							adPut(youlaiArray[i]);
+                						}
+                						advLogInfo(sourceType, 0);
+                					}
+                					if(runhaiArray != null && runhaiArray.length > 0) {
+                						removeBaiduAd();
+                						var runhaiData = runhaiArray[Math.floor(Math.random()*runhaiArray.length)];
+                						runhaiPut(runhaiData);
+                						advLogInfo('COOPERATE_RUNHAI', 0);
+                					}
+                					if((runhaiArray == null || runhaiArray.length == 0)
+                							&& (youlaiArray == null || youlaiArray.length == 0)) {
+                						loadEffect(questionId, $thatParam, $thatLog, $tokenDiv, token); // 加载效果广告
+                					}else{
+                						loadStatsToken($tokenDiv, token);
+                					}
+                				} catch (e) {
+                					console.log(e);
+                				}
+                			});
+                		} catch (e) {}
+                	});
+                }
                 if(!visitFlag) {
-                    loadEffect(questionId, $thatParam, $thatLog); // 加载效果广告
+                	loadEffect(questionId, $thatParam, $thatLog, $tokenDiv, token); // 加载效果广告
                 }
             });
         }
@@ -938,12 +957,12 @@ define(function (require) {
     };
 
     // 加载效果广告
-    var loadEffect = function (questionId, $thatParam, $thatLog) {
+    var loadEffect = function (questionId, $thatParam, $thatLog, $tokenDiv, token) {
     	if ($thatLog.length === 0) {
             var sourceType = 'COOPERATE_EFFECT';
             $thatParam.setAttribute('sources', sourceType);
             // 商业效果广告
-            effectAvertisement(questionId, sourceType);
+            effectAvertisement(questionId, sourceType, $tokenDiv, token);
         }
     };
     var loadInit = function (options) {
@@ -1034,7 +1053,7 @@ define(function (require) {
         		if ((answerTotal == 1 && answerConNumber != 0 && answerConNumber < 170) || (answerTotal == 2 && answerConNumber != 0 && answerConNumber < 160)){
         			numTotal = true;
         		}
-			var $that = ele.querySelectorAll('.critics-list');
+        		var $that = ele.querySelectorAll('.critics-list');
         		monthlyFeed1($that, adUserId, object, numTotal, baiduObj);
         		advLogInfoClick('.runhai_feed1 .href_log', $paramDiv, 'COOPERATE_RUNHAI');
         	}
@@ -1081,7 +1100,7 @@ define(function (require) {
     };
     var monthlyFeed1 = function ($that, adUserId, object, numTotal, baiduObj) {
     	var html = '<div class="m-yy-con runhai_feed1" >';
-    	html += '<div class="href_log" uid="'+adUserId+'" href="'+object.picLink+'" pos="'+object.type+'" '+baiduObj+'>'
+    	html += '<div class="href_log" uid="'+adUserId+'" href="'+object.picLink+'" pos="'+object.type+'" '+baiduObj+'>';
 		html+='<h2 class="m-yy-title">'+subStringIask(hexToDec(object.title),24)+'</h2>';
 		if (!numTotal){
 			html+='<ul class="m-yy-list href_log" uid="'+adUserId+'" href="'+object.picLink+'" pos="'+object.type+'" '+baiduObj+'>';
@@ -1100,12 +1119,12 @@ define(function (require) {
 		html+='</div>';
 		html+='<span class="m-yy-link">查看详情</span>';
 		html+='</div></div></div>';
-		var index = $that.length - 1;
-		if($that.length > 0) {
-		    var newdiv=document.createElement("div");
-		    newdiv.innerHTML = html;
-		    $that[index].parentNode.appendChild(newdiv);
-		}
+		var index = $that.length -1;
+        if($that.length > 0) {
+        	var newdiv=document.createElement("div");
+        	newdiv.innerHTML = html;
+        	$that[index].parentNode.appendChild(newdiv);
+        }
     };
     var monthlyZixun = function (clazz, adUserId, object, baiduObj) {
 		var html = '<div class="m-doc-con runhai_zixun">';
@@ -1297,6 +1316,8 @@ define(function (require) {
     	var $thatHotList = ele.querySelector('.hot-tui-list');
     	var $thatHotDiv = ele.querySelector('.hot_recomd_div');
     	var $that = ele.querySelector('.mip_as_bottm_div');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         var url = 'https://imgv2-ssl.g3user.com/api/iask.php?uid=' + openId + '&type=m&callback=?';
         try {
             $.getJSON(url, function (data) {
@@ -1320,25 +1341,122 @@ define(function (require) {
                 	advLogInfoClick('.hot-tui-list .href_log', document.querySelector('.paramDiv'));
                 }
                 advLogInfo('COOPERATE_SOUTHNETWORK', 0);
-                loadStatsToken();
+                loadStatsToken($tokenDiv, token);
             });
         }
         catch (e) {}
     };
+    var getmainCategoryPics = function (){
+    	var list = {};
+        var $that = document.querySelectorAll('.mianCategoryPics li');
+        if($that.length > 0) {
+        	for(var i=0; i< $that.length; i ++) {
+        		var cid = $that[i].getAttribute('cid');
+        		var val = $that[i].getAttribute('val');
+        		list[cid] = val;
+        	}
+        }
+        return list;
+    };
+    var loadMImagesrc = function(picsArr, cid) {
+        var list = picsArr[cid];
+        if(undefined == list) {
+        	list = picsArr['0000'];
+        }
+        var picArr = list.split(',');
+        var cur = fRandomBy(0, picArr.length-1);
+        var pic = picArr[cur];
+        return "http://pic.iask.cn/fimg/" + pic +"_560.jpg";
+    };
+    var getFlowEmbed = function(classFlag){
+        var $that = document.querySelectorAll('.flow-info-params li');
+        var htmls = '';
+        if($that.length > 0) {
+        	for(var i=0; i< $that.length; i ++) {
+        		var clazz = $that[i].getAttribute('class');
+        		var domainBd = $that[i].getAttribute('domain');
+        		var tokenBd = $that[i].getAttribute('token');
+        		if(classFlag.indexOf(clazz) > -1) {
+        			htmls ='<mip-embed type="baidu-wm-ext" domain="'+domainBd+'" token="'+tokenBd+'" ><div id="'+tokenBd+'"></div></mip-embed>';
+        			break;
+        		}
+        	}
+        }
+        return htmls;
+    };
+    var addFlowEmbed = function(clazz) {
+    	var $that = document.querySelectorAll(clazz);
+    	if($that.length > 0) {
+    		for(var i=0; i < $that.length; i++) {
+    			var c = $that[i].getAttribute('class');
+    			if(c.indexOf("hide") > -1) {
+    				continue;
+    			}
+    			if($that[i].innerHTML != '') {
+    				continue;
+    			}
+    			$that[i].innerHTML = getFlowEmbed(c);
+    		}
+    	}
+    };
+    var infoFlow = function () {
+    	try{
+    		var $that = document.querySelector('.info-flow-json-data');
+    		if($that != null) {
+    			removeInfo();
+    			$('.info-flow-json-data').removeClass("hide").addClass("show");
+    		}else{
+    			return;
+    		}
+	    	var picsArr = getmainCategoryPics();
+	    	var $that = document.querySelectorAll(".issues-list .category-img");
+	    	if($that.length > 0) {
+	    		for(var i=0; i < $that.length; i++) {
+	    				var cid = $that[i].getAttribute('cid');
+	    				var pic = loadMImagesrc(picsArr, cid);
+	    				var img = '<mip-img class="mip-img" src="' + pic + '" ></mip-img>';
+	    				$that[i].innerHTML = img;
+	    		}
+	    	}
+	    	addFlowEmbed('.issues-item .flow-left-word-right-img');
+	    	addFlowEmbed('.issues-item .flow-three-img');
+	    	addFlowEmbed('.issues-item .flow-plus-img');
+    	}catch (e) {
+    	}
+    };
     
+    var issuesChange = function(){
+    	$('.issues-change').click(function(){
+    		var $notices = $(".relationRecommend");
+	    	$notices.find("li.show").removeClass("show").addClass("hide").appendTo($notices);
+	    	var i = 0;
+	    	$notices.find("li.hide").each(function(){
+	    		if(i == 6) {
+	    			return;
+	    		}
+	    		i ++;
+	    		$(this).removeClass("hide").addClass("show");
+	    	});
+	    	addFlowEmbed('.issues-item .flow-left-word-right-img');
+	    	addFlowEmbed('.issues-item .flow-three-img');
+    	});
+    };
     // 商业效果广告
-    var effectAvertisement = function (questionId, sourceType) {
+    var effectAvertisement = function (questionId, sourceType,$tokenDiv, token) {
         ipLoad(function (data) {
             var provinceCode = data.provinceCode;
-            var url = 'https://mipp.iask.cn/mib/tag/test?q=' + questionId + '&c=' + provinceCode;
+            var url = 'http://m.iask.sina.com.cn/mib/tag/test?q=' + questionId + '&c=' + provinceCode;
+            //var url = 'https://mipp.iask.cn/mib/tag/test?q=' + questionId + '&c=' + provinceCode;
             try {
                 $.getJSON(url, function (res) {
                     if (res.jsonData != null) {
                         advEffectCallBack(res.jsonData);
                         advLogInfo(sourceType, 0);
-                        loadStatsToken();
+                        loadStatsToken($tokenDiv, token);
                     } else {
                     	advLogInfo('', 0);
+                    	// 信息流图片
+                    	// infoFlow();
                     }
                 });
             }
@@ -1346,6 +1464,8 @@ define(function (require) {
             }
         });
     };
+    
+    
     var advEffectCallBack = function (dd) {
     	var ele = this.document;
     	var $that = ele.querySelector('.paramDiv');
@@ -1432,10 +1552,10 @@ define(function (require) {
             return;
         }
     };
-    var brandAvertisement = function (sourceType) {
+    var brandAvertisement = function (sourceType, $tokenDiv, token) {
         advLogInfo(sourceType, 0);
         advLogInfoClick('.href_log', document.querySelector('.paramDiv'));
-        loadStatsToken();
+        loadStatsToken($tokenDiv, token);
     };
     // 保险广告
     var iAskDisplayHtml = {
@@ -1478,6 +1598,7 @@ define(function (require) {
         },
         answerInfo: function (opts, dsbo) {
             var statsBaidu = 'data-stats-baidu-obj="' + dsbo + '"';
+//            putQiyeInfo(opts.drName, opts.companyName, opts.website, opts.picUrl, statsBaidu, opts.type);
             putBaoXiangQiyeInfo(opts.phone, 'http://pic.iask.cn/fimg/1508386968_1196.jpg', statsBaidu, opts.type);
         },
         feed: function (opts, dsbo) {
@@ -1605,7 +1726,7 @@ define(function (require) {
             return nObject;
         }
     };
-    var iaskInsurance = function (data) {
+    var iaskInsurance = function (data, $tokenDiv, token) {
     	var ele = this.document;
     	var $that = ele.querySelector('.paramDiv');
     	$that.setAttribute('sources', 'COOPERATE_BAOXIAN');
@@ -1632,7 +1753,7 @@ define(function (require) {
             }
             // 给点击事件做来源
             advLogInfo('COOPERATE_BAOXIAN', 0);
-            loadStatsToken();
+            loadStatsToken($tokenDiv, token);
         }
         catch (e) {
         	console.log(e);
@@ -1656,10 +1777,12 @@ define(function (require) {
         var mainTags  = $thatParam.getAttribute('maintags');
         var questionId = $thatParam.getAttribute('qid');
         var qcid = $thatParam.getAttribute('qcid');
+        var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         if (sources === 'COMMERCIAL_IAD' || sources === 'COMMERCIAL_ZWZD' || sources === 'COMMERCIAL_CAD') {
             // 商业广告
             removeBaiduAd();
-            busBottomAM();
+            busBottomAM(ele, $tokenDiv, token);
             if (sources === 'COMMERCIAL_ZWZD') {
                 sources = 'COOPERATE_COMMERCIAL';
             }
@@ -1668,7 +1791,7 @@ define(function (require) {
         else if ((sources === 'COOPERATE_BRAND' || sources === 'COOPERATE_BRAND_MARKET')
         		&& (version === '1' || version === '3')) {
             // 商业广告-旗舰版、专业版本
-            brandAvertisement(sources);
+            brandAvertisement(sources, $tokenDiv, token);
         }
         else if (sourceType === 'COOPERATE_BRAND' && version === '2') {
             // 商业广告-标准版
@@ -1676,7 +1799,7 @@ define(function (require) {
             commercialSqc($thatQiye, $thatHover);
             advLogInfo('COOPERATE_BRAND', 0);
             advLogInfoClick('.mip_as_bottm_div .href_log', ele.querySelector('.paramDiv'));
-            loadStatsToken();
+            loadStatsToken($tokenDiv, token);
         }
         else if (sourceType === 'COOPERATE_HUASHENG' || sourceType === 'COOPERATE_HUASHENG_QA'
         	|| sourceType === 'COOPERATE_YOULAI' || sourceType === 'COOPERATE_TIANZHU' 
@@ -1713,7 +1836,7 @@ define(function (require) {
                     url += 'il';
                 }
                 $.get(url, function (data) {
-                    iaskInsurance(data);
+                    iaskInsurance(data,$tokenDiv, token);
                 });
             }
         }
@@ -1731,6 +1854,8 @@ define(function (require) {
     	var ele = this.document;
     	var $thatDiv = ele.querySelectorAll('.mip_as_bottm_div');
     	var $that = ele.querySelectorAll('.paramDiv');
+    	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
+    	var token = ele.querySelector('.mip-token-value').innerHTML;
         if (validatePut()) {
             var nowTime = getSysTime();
             var startTime = ele.querySelector('.yongyouStartTime').innerText;
@@ -1756,7 +1881,7 @@ define(function (require) {
                 });
                 var sources = $that.getAttribute('sources');
                 advLogInfo(sources, 0);
-                loadStatsToken();
+                loadStatsToken($tokenDiv, token);
             }
         }
         
@@ -1767,6 +1892,7 @@ define(function (require) {
             },
             commercialLoad: function () {
             	selectCommercail();
+            	issuesChange();
             },
             init: function () {
                 this.newLoadAd();
@@ -1779,4 +1905,3 @@ define(function (require) {
     };
     return customElem;
 });
-
