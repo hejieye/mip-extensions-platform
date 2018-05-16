@@ -837,9 +837,14 @@ define(function (require) {
         var arry = tags.split(':');
         var youlaiTag = '';
         var runhaiTag = '';
+        var visitFlag = true;
         for (var i = 0; i < arry.length; i++) {
-        	youlaiTag =arry[i].replace('[', '').replace(']', '') + '?callback=cb';
-        	runhaiTag = "runhai"+arry[i].replace('[', '').replace(']', '') + '?callback=cb';
+        	youlaiTag = arry[i].replace('[', '').replace(']', '');
+        	if(youlaiTag === '') {
+        		visitFlag = false;
+        	}
+        	youlaiTag = youlaiTag + "?callback=cb"; 
+        	runhaiTag = "runhai"+ youlaiTag;
         }
         try {
             var province = ''; // 省份
@@ -869,59 +874,61 @@ define(function (require) {
                     qTags: paramsArry[4], // 标签
                     nowTime: getSysTime()
                 });
-                // 友来包月
-                $.getJSON(url+youlaiTag, function (datas) {
+		if(visitFlag) {
+                    // 友来包月
+                    $.getJSON(url+youlaiTag, function (datas) {
                 	var youlaiArray = null;
                 	var runhaiArray = null;
-                    try {
-                        if (datas.succ === 'Y') { // 不等于空
-			    try {
-				var json = datas.html;
-				json = json.substring(3, json.length-1);
-				var cmJsonData = $.parseJSON(json);
-                                if ('undefined' !== typeof cmJsonData) {
-                            	    youlaiArray = loadData(param, cmJsonData);
-                                }
-			    }catch (e) {}
-                        }
-                        $.getJSON(url+runhaiTag, function (result) {
-                            try {
-                                if (result.succ === 'Y') { // 不等于空
-				    try {
-					var json = result.html;
-                                	json = json.substring(3, json.length-1);
-                                        var cmJsonData = $.parseJSON(json);
-                                        if ('undefined' !== typeof cmJsonData) {
-                                            runhaiArray = loadData(param, cmJsonData);
-                                        }
-			            }catch (e) {}
-                                }
-                                if(youlaiArray != null && youlaiArray.length > 0) {
+                        try {
+                            if (datas.succ === 'Y') { // 不等于空
+			        try {
+				    var json = datas.html;
+				    json = json.substring(3, json.length-1);
+				    var cmJsonData = $.parseJSON(json);
+                                    if ('undefined' !== typeof cmJsonData) {
+                            	        youlaiArray = loadData(param, cmJsonData);
+                                    }
+			        }catch (e) {}
+                            }
+                            $.getJSON(url+runhaiTag, function (result) {
+                                try {
+                                    if (result.succ === 'Y') { // 不等于空
+				        try {
+					    var json = result.html;
+                                	    json = json.substring(3, json.length-1);
+                                            var cmJsonData = $.parseJSON(json);
+                                            if ('undefined' !== typeof cmJsonData) {
+                                                runhaiArray = loadData(param, cmJsonData);
+                                            }
+			                }catch (e) {}
+                                    }
+                                    if(youlaiArray != null && youlaiArray.length > 0) {
                                 	for(var i = 0; i < youlaiArray.length; i ++) {
                                 		adPut(youlaiArray[i]);
                                 	}
                                 	advLogInfo(sourceType, 0);
-                                }
-                                if(runhaiArray != null && runhaiArray.length > 0) {
+                                    }
+                                    if(runhaiArray != null && runhaiArray.length > 0) {
                                 	removeBaiduAd();
                                 	var runhaiData = runhaiArray[Math.floor(Math.random()*runhaiArray.length)];
                                 	runhaiPut(runhaiData);
                                 	advLogInfo('COOPERATE_RUNHAI', 0);
-                                }
-                                if((runhaiArray == null || runhaiArray.length == 0)
+                                    }
+                                    if((runhaiArray == null || runhaiArray.length == 0)
                                 		&& (youlaiArray == null || youlaiArray.length == 0)) {
                                 	loadEffect(questionId, $thatParam, $thatLog); // 加载效果广告
-                                }else{
-                                	loadStatsToken();
+                                    }else{
+                                        loadStatsToken();
+                                    }
+                                } catch (e) {
+                            	    console.log(e);
                                 }
-                            } catch (e) {
-                            	console.log(e);
-                            }
-                        });
-                    } catch (e) {}
-                });
-                if(youlaiTag === '') {
-                	loadEffect(questionId, $thatParam, $thatLog); // 加载效果广告
+                            });
+                        } catch (e) {}
+                    });
+		}
+                if(!visitFlag) {
+                    loadEffect(questionId, $thatParam, $thatLog); // 加载效果广告
                 }
             });
         }
@@ -1027,7 +1034,8 @@ define(function (require) {
         		if ((answerTotal == 1 && answerConNumber != 0 && answerConNumber < 170) || (answerTotal == 2 && answerConNumber != 0 && answerConNumber < 160)){
         			numTotal = true;
         		}
-        		monthlyFeed1('.critics-list', adUserId, object, numTotal, baiduObj);
+			var $that = ele.querySelectorAll('.critics-list');
+        		monthlyFeed1($that, adUserId, object, numTotal, baiduObj);
         		advLogInfoClick('.runhai_feed1 .href_log', $paramDiv, 'COOPERATE_RUNHAI');
         	}
         	else if(json[key].type === '2') {
@@ -1071,7 +1079,7 @@ define(function (require) {
         html += '</div>';
         $(clazz).after(html);
     };
-    var monthlyFeed1 = function (clazz, adUserId, object, numTotal, baiduObj) {
+    var monthlyFeed1 = function ($that, adUserId, object, numTotal, baiduObj) {
     	var html = '<div class="m-yy-con runhai_feed1" >';
     	html += '<div class="href_log" uid="'+adUserId+'" href="'+object.picLink+'" pos="'+object.type+'" '+baiduObj+'>'
 		html+='<h2 class="m-yy-title">'+subStringIask(hexToDec(object.title),24)+'</h2>';
@@ -1092,13 +1100,12 @@ define(function (require) {
 		html+='</div>';
 		html+='<span class="m-yy-link">查看详情</span>';
 		html+='</div></div></div>';
-		var index = $(clazz).length - 1;
-		var $that = document.querySelectorAll(clazz);
-                if($that.length > 0) {
-        	    var newdiv=document.createElement("div");
-        	    newdiv.innerHTML = html;
-        	    $that[index].parentNode.appendChild(newdiv);
-                }
+		var index = $that.length - 1;
+		if($that.length > 0) {
+		    var newdiv=document.createElement("div");
+		    newdiv.innerHTML = html;
+		    $that[index].parentNode.appendChild(newdiv);
+		}
     };
     var monthlyZixun = function (clazz, adUserId, object, baiduObj) {
 		var html = '<div class="m-doc-con runhai_zixun">';
