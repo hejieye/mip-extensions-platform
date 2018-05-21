@@ -752,7 +752,7 @@ define(function (require) {
         var link = divData.getAttribute('link');
         var introduce = divData.getAttribute('introduce');
         var uid =  divData.getAttribute('uid');
-    	var brandLink = 'http://m.iask.sina.com.cn/brand/' + uid + '.html';
+    	var brandLink = 'https://mipp.iask.cn/brand/' + uid + '.html';
     	putBrandQiyeInfo(ele, brandname, introduce, link, imgsrc, statsBaidu, '', brandLink);
         var tImgSrc = commercialStandardHover.getAttribute('imgsrc');
         var tLink = commercialStandardHover.getAttribute('link');
@@ -1512,7 +1512,7 @@ define(function (require) {
             	brandLink = json.materialLink;  // 南方网通效果广告-链接跳转自己的物料链接
             }
             else {
-            	brandLink = 'http://m.iask.sina.com.cn/brand/' + uid + '.html';
+            	brandLink = 'https://mipp.iask.cn/brand/' + uid + '.html';
             }
             putBrandQiyeInfo(ele, json.brandName, json.shortIntroduce, json.materialLink, json.materialImg, baiduObj, '', brandLink);
             return;
@@ -1767,6 +1767,7 @@ define(function (require) {
     };
     // 选择投放广告
     var selectAS = function () {
+	/*因为广告参数定义到了组件外部所以我们这里需要用到全局选择器*/
     	var ele = this.document;
     	var $thatParam = ele.querySelector('.paramDiv');
     	var $thatHover = ele.querySelector('.commercialStandardHover');
@@ -1854,6 +1855,7 @@ define(function (require) {
     };
     
     var selectCommercail = function() {
+	/*因为广告参数定义到了组件外部所以我们这里需要用到全局选择器*/
     	var ele = this.document;
     	var $thatDiv = ele.querySelectorAll('.mip_as_bottm_div');
     	var $that = ele.querySelectorAll('.paramDiv');
