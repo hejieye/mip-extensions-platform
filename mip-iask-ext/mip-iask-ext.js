@@ -11,6 +11,7 @@ define(function (require) {
     var effects = {
         // 标签切换
         switchBlock: function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
             $('.similar-nav').on('click', 'li',
             function () {
                 event.preventDefault();
@@ -27,6 +28,7 @@ define(function (require) {
         },
         // 换一换
         changeMore: function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
             $('.link-change').on('click', function (event) {
                 event.preventDefault();
                 try {
@@ -49,6 +51,7 @@ define(function (require) {
         },
         // 相关知识换一换
         kownlegMore: function() {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
         	$('.kownleg-change').on('click', function (event) {
                 event.preventDefault();
         		$("div.similar").find("div.show").removeClass("show").addClass("hide").appendTo($("div.similar"));
@@ -63,6 +66,7 @@ define(function (require) {
         },
         // 展开 or 收起
         openOrStop: function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
             $('.os-click').on('click',
             function (event) {
                 event.preventDefault();
@@ -82,6 +86,7 @@ define(function (require) {
         },
         // 问题搜索
         btnSearch: function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
             $('.btn-search').click(function () {
                 var content = $('.search-input').val();
                 if (content.trim().length < 2) {
@@ -94,6 +99,7 @@ define(function (require) {
         // 提问
         btnSend: function () {
             try {
+                // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
                 $('.btn-send').click(function () {
                     event.preventDefault();
                     var content = $('.search-input').val();
@@ -104,6 +110,7 @@ define(function (require) {
         },
         // 验证登录信息
         checkLogin: function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
             /*该参数是作为组件外部参数,所以需要用到全局选择器*/
             var $that = document.querySelector('.paramDiv');
     	    var cid = $that.getAttribute("cid");
@@ -120,6 +127,7 @@ define(function (require) {
         },
         // 折叠
         accordion : function () {
+            // 因为多个功能都集成在一个组件内，所以需要用到全局的选择器
         	$('.iask-show-more').click(function () {
         		$(this).parent().siblings('.iask-accordion').each(function () {
         			$(this).show();
