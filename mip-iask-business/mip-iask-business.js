@@ -1284,7 +1284,7 @@ define(function (require) {
     var southnetwork = function (ele, openId) {
     	var $thatHotList = ele.querySelector('.hot-tui-list');
     	var $thatHotDiv = ele.querySelector('.hot_recomd_div');
-    	var $that = document.querySelector('.mip_as_bottm_div');
+    	var $that = ele.querySelector('.mip_as_bottm_div');
     	var $tokenDiv = ele.querySelector('.mip-stats-token-div');
     	var token = ele.querySelector('.mip-token-value').innerHTML;
         var type = 'SOUTH';
